@@ -1,5 +1,7 @@
 # Rotation odometry and object mapping
 
+**Start here: [Simple user manual](QUICK_START.md)** — install, label images, train, evaluate, and run the robot.
+
 External Python controller for your existing CoppeliaSim scene. It rotates a differential-drive robot, integrates measured wheel angles, detects objects using YOLO, and projects detections into a simple 2D landmark map using camera depth. It does not require an embedded Python interpreter in CoppeliaSim.
 
 ## Training and evaluation commands
@@ -50,6 +52,7 @@ rotation_mapping/
 ├── test_main.py            # Automated odometry and projection tests
 ├── dataset.example.yaml    # Dataset configuration template
 ├── requirements.txt        # Python dependencies
+├── QUICK_START.md           # Simple step-by-step user manual
 ├── TRAINING_GUIDE.md        # Custom dataset training instructions
 ├── README.md
 ├── dataset/                # Your images and labels (not included)
