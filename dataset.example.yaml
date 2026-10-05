@@ -1,0 +1,9 @@
+# Copy to dataset.yaml and set your absolute dataset folder path.
+path: /absolute/path/to/rotation_mapping/dataset
+train: images/train
+val: images/val
+# Add only when a labeled test split exists:
+# test: images/test
+names:
+  0: Cube
+  1: Tree

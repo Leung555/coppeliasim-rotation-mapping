@@ -1,0 +1,14 @@
+dataset/
+dataset_backups/
+captures/
+runs/
+output/
+weights/
+*.pt
+__pycache__/
+*.py[cod]
+.venv/
+.venv-labelstudio/
+dataset.yaml
+.env
+.env.*
