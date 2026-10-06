@@ -144,7 +144,7 @@ Select the class, draw its rectangle, then submit/save the annotation before mov
 3. Inspect the exported class mapping, such as `classes.txt`, if present. The mapping in the export is the source of truth: do not assume the displayed label order guarantees your desired numeric IDs.
 4. Set `names` in `dataset.yaml` to match the exported IDs exactly. For example, if the export maps cylinder to 0, use `0: cylinder` rather than the example's `0: cube`. If you deliberately change IDs, update every corresponding label file too.
 5. Match each exported `.txt` file with its image by filename stem. Exported image names may differ from the originals; check the archive before copying or renaming files.
-6. Move image/label pairs into the scene-based splits described below. Exporting annotations does not automatically create this project's train/validation/test split.
+6. Use `prepare_dataset.py` to copy matching pairs into the splits described below. Exporting annotations does not automatically create this project's train/validation/test split.
 
 Check that every box line contains exactly five fields: an integer class ID followed by four normalized coordinates. JSON export is not directly usable by `train.py`. Avoid segmentation or oriented-box export formats for this model. Label Studio documents YOLO support for `RectangleLabels` in its [export guide](https://labelstud.io/guide/export).
 
@@ -166,6 +166,24 @@ Its center is `(240, 240)`, width is 160, height is 240. Divide x/width by 640 a
 
 ## 5. Split by scene and arrange the dataset
 
+Label Studio's YOLO export is flat: `images/`, `labels/`, and optionally `classes.txt`. Prepare independent photos automatically:
+
+```bash
+python prepare_dataset.py --source /path/to/extracted-export --val-ratio 0.2
+```
+
+Output defaults to `dataset/` beside the script. It copies matching pairs, preserves source files, uses seed 42, and refuses to overwrite existing split folders. Missing labels cause an error; supply empty labels only for reviewed background images. `--output another_dataset` selects a different destination.
+
+For the export containing cropped Cube/Tree video frames and separate screenshots:
+
+```bash
+python prepare_dataset.py --source /path/to/extracted-export --train-pattern '*_cropped.*' --val-pattern '*Screenshot*'
+```
+
+These patterns select 24 cropped training images and 17 validation screenshots in the current export, excluding 24 raw video variants. Both patterns must be provided, match images, and not overlap. Adapt them for other exports; the script does not infer recording groups. Review class coverage and empty labels after preparation.
+
+If `classes.txt` exists, the script creates `dataset/dataset.yaml` with an absolute dataset path and the original class order. JSON syntax in that file is valid YAML. Use `--data dataset/dataset.yaml` in **both** `train.py` and `evaluate.py`; the existing project `dataset.yaml` is also compatible if its path and classes match. Without `classes.txt`, create a YAML using the template below. No test split is generated automatically.
+
 An initial split can be approximately 70% training, 20% validation and 10% testing. Group images from the same layout/scan in one split. Adjacent frames from one rotation are similar; distributing them across splits can produce misleading evaluation results. Ensure classes are represented in each split where possible.
 
 ```text
@@ -182,7 +200,7 @@ dataset/
 
 Use unique names across collection sessions. Keep raw captures as a backup.
 
-Copy the template:
+If no configuration was generated, copy the template:
 
 ```bash
 cp dataset.example.yaml dataset.yaml

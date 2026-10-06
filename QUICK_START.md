@@ -41,7 +41,30 @@ Check the export's class mapping. The examples below use `0 = Cube`, `1 = Tree`.
 
 ## 3. Prepare the dataset
 
-Copy image/label pairs into this structure. An image and its `.txt` label must have the same filename stem:
+Label Studio exports flat `images/` and `labels/` directories; it does not create training and validation splits. For independent photos, run:
+
+```bash
+python prepare_dataset.py --source /path/to/extracted-export --val-ratio 0.2
+```
+
+The script defaults to the project's `dataset/` directory, copies matching image/label pairs into an 80% training / 20% validation split with seed 42, and preserves the source. You can also use `--source dataset` if the flat export is already there. Existing split folders and generated configuration are never overwritten; use `--output another_dataset` for a separate preparation. Missing labels are reported; reviewed background images need empty `.txt` files.
+
+For the Cube/Tree export with cropped video frames and separate screenshots, use:
+
+```bash
+python prepare_dataset.py --source /path/to/extracted-export --train-pattern '*_cropped.*' --val-pattern '*Screenshot*'
+```
+
+This selects cropped frames for training and screenshots for validation, excluding raw video variants. Both patterns are required and must not overlap. For other recordings, choose patterns that keep related scenes together; the script does not infer scene groups.
+
+When `classes.txt` is present, the script generates `dataset/dataset.yaml` using the exported class order. Pass that same YAML to training and evaluation:
+
+```bash
+python train.py --data dataset/dataset.yaml --epochs 100 --device cpu
+python evaluate.py --weights runs/YOUR_RUN/weights/best.pt --data dataset/dataset.yaml --device cpu --preview
+```
+
+Use the actual run directory printed by training. The generated configuration uses JSON syntax, which is valid YAML. If `classes.txt` is absent, create the configuration using the template below. The result has this structure:
 
 ```text
 dataset/
@@ -55,7 +78,7 @@ dataset/
 
 Both splits should contain examples of **both classes**. Keep a video or scene layout in one split; use separate recordings for validation. Reviewed images with no target objects can have empty label files.
 
-Create the dataset configuration:
+If no configuration was generated, create the dataset configuration:
 
 ```bash
 cp dataset.example.yaml dataset.yaml

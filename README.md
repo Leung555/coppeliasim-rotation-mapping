@@ -47,6 +47,7 @@ Keep the dataset split fixed when comparing runs. `--split test` requires an exi
 ```text
 rotation_mapping/
 ├── main.py                 # Settings, all runtime functions and robot loop
+├── prepare_dataset.py      # Prepare Label Studio train/validation splits
 ├── train.py                # Custom YOLO training
 ├── evaluate.py             # Validation/test detection metrics
 ├── test_main.py            # Automated odometry and projection tests
@@ -128,6 +129,15 @@ label-studio
 Create a bounding-box project, import clean `rgb_*.png` captures, label all target objects, and export in YOLO format. Check the exported class IDs against your dataset YAML before training. See the [Label Studio workflow in the training guide](TRAINING_GUIDE.md#4-annotate-bounding-boxes) for setup, labeling configuration and export steps, based on the official [Label Studio quick start](https://labelstud.io/guide/quick_start.html).
 
 ## Train your object types
+
+Prepare the extracted Label Studio YOLO export automatically:
+
+```bash
+python prepare_dataset.py --source /path/to/extracted-export --val-ratio 0.2
+python train.py --data dataset/dataset.yaml --epochs 100 --device cpu
+```
+
+The script adds `images/{train,val}` and `labels/{train,val}` inside the project's `dataset/` folder, preserving original files. With `classes.txt`, it generates `dataset/dataset.yaml` with the exported class order; use that YAML for both training and evaluation. Existing splits are protected. The random split is for independent photos; video frames should use scene-based filename patterns. See [dataset preparation](QUICK_START.md#3-prepare-the-dataset) for the cropped-frame/screenshot example, missing labels, and configuration fallback.
 
 Follow [TRAINING_GUIDE.md](TRAINING_GUIDE.md) for collecting clean sensor images, annotating YOLO bounding boxes, splitting scenes, configuring classes, training, evaluating and using your weights. It includes a worked label example and troubleshooting.
 
